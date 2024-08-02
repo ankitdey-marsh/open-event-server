@@ -3,7 +3,7 @@ import string
 import secrets
 from dataclasses import dataclass
 from typing import Optional
-
+ 
 import requests
 
 from app.api.helpers.db import get_new_identifier, get_or_create
