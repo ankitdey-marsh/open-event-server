@@ -308,6 +308,12 @@ def verify_email():
         logging.info('Email Verified')
         return make_response(jsonify(message="Email Verified"), 200)
 
+# implemented regular expression to limit the character set to be used in the emails.
+# used bleach library to prevent cross site scripting attacks
+import re
+from bleach import clean
+
+EMAIL_REGEX = r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 
 @auth_routes.route('/resend-verification-email', methods=['POST'])
 def resend_verification_email():
@@ -316,6 +322,13 @@ def resend_verification_email():
     except TypeError:
         logging.error('Bad Request')
         raise BadRequestError({'source': ''}, 'Bad Request Error')
+
+    if not re.match(EMAIL_REGEX, email):       # this portion matches the email with the fixed character set.
+        logging.error('Invalid email address')
+        raise BadRequestError({'source': ''}, 'Invalid email address')
+
+    sanitized_email = clean(email)  # here the mail is cleaned from XSS attacks
+    email=sanitized_email
 
     try:
         user = User.query.filter_by(email=email).one()
